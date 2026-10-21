@@ -48,10 +48,10 @@ Argo CD only needs read access; this repository is public. Kargo needs write
 access to commit the promoted release marker:
 
 ```sh
-cp gitops/apps/kargo-showcase/kargo/credentials.example.yaml \
-   gitops/apps/kargo-showcase/kargo/credentials.yaml
+cp gitops/apps/kargo-showcase/credentials.example.yaml \
+   gitops/apps/kargo-showcase/credentials.yaml
 # edit username and PAT
-kubectl apply -f gitops/apps/kargo-showcase/kargo/credentials.yaml
+kubectl apply -f gitops/apps/kargo-showcase/credentials.yaml
 ```
 
 The real `credentials.yaml` is ignored by Git.

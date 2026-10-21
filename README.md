@@ -108,9 +108,9 @@ push to an external registry. Kargo promotes a Git release marker
 prod requires a manual promotion in Kargo.
 
 Kargo needs write access to the repository to commit promotions. Copy
-`gitops/apps/kargo-showcase/kargo/credentials.example.yaml` to
-`credentials.yaml`, fill in a GitHub username and PAT, and apply it after the
-Kargo Project exists or after `task gitops:apply`.
+`gitops/apps/kargo-showcase/credentials.example.yaml` to
+`gitops/apps/kargo-showcase/credentials.yaml`, fill in a GitHub username and
+PAT, and apply it after the Kargo Project exists or after `task gitops:apply`.
 
 ## Helm chart
 
