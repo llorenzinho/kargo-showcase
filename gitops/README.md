@@ -112,6 +112,16 @@ The shared PromotionTask copies the Freight's `release.yaml` into
 sync the matching Application. Do not edit the `envs/*/release.yaml` files by
 hand: Kargo owns them.
 
+Only `gitops/apps/kargo-showcase/release.yaml` is watched by the Warehouse.
+Changing an environment overlay directly does **not** create new Freight; it
+only creates drift between that Application and the revision Kargo recorded.
+
+The `argocd-update` step deliberately leaves `desiredRevision` unset. All
+environment Applications track `main`, so pinning each Stage to its own
+promotion commit would make the other Stages report `Unhealthy` as soon as the
+branch advances. Argo CD auto-sync handles the Application, and Kargo checks the
+Application's health.
+
 ### Simulate a release
 
 For an **image release**, first build and load the new image into kind:

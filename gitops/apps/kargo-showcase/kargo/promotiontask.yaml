@@ -39,10 +39,12 @@ spec:
       config:
         path: ./out
 
+    # All environment Applications track main. Do not pin desiredRevision here:
+    # each promotion advances main HEAD, so a Stage-specific revision check would
+    # make every other Stage report Unhealthy until its next promotion. Argo CD
+    # auto-sync keeps the Application current; Kargo checks its health instead.
     - uses: argocd-update
       config:
         apps:
           - name: kargo-showcase-${{ ctx.stage }}
-            sources:
-              - repoURL: ${{ vars.repoURL }}
-                desiredRevision: ${{ task.outputs.commit.commit }}
+            namespace: argocd
