@@ -1,10 +1,11 @@
 # Git-driven release marker used by the lab.
 #
-# The image kargo-showcase:dev is already loaded into the kind cluster, so
-# there is no image registry to poll. Bump the release label to create new
-# Freight, then let Kargo promote it through dev, staging and prod.
+# Build and load images with: task image:build VERSION=v2
+# There is no registry to poll; kind load makes the tag available locally.
+# Bump this file to create new Freight, then let Kargo promote it through
+# dev, staging and prod. Do not edit the envs/*/release.yaml files directly.
 image:
   tag: v2
 
 podLabels:
-  kargo.akuity.io/release: v1
+  kargo.akuity.io/release: v2
