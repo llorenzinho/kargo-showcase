@@ -1,5 +1,10 @@
+# Git-driven release marker used by the lab.
+#
+# The image kargo-showcase:dev is already loaded into the kind cluster, so
+# there is no image registry to poll. Bump the release label to create new
+# Freight, then let Kargo promote it through dev, staging and prod.
 image:
   tag: dev
 
 podLabels:
-  kargo.akuity.io/release: v0
+  kargo.akuity.io/release: v1
