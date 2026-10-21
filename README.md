@@ -114,6 +114,15 @@ PAT, and run `task gitops:apply` (the task applies the credentials file if it
 exists). If you add the file later, apply it manually; if the first promotion
 already failed, retry it from the Kargo UI.
 
+The PAT must be allowed to write to this repository:
+
+- **Fine-grained PAT**: `Contents: Read and write`; `Metadata: Read-only` is
+  included automatically.
+- **Classic PAT**: `public_repo` is enough for this public repository; `repo`
+  also works but is broader.
+
+See [`gitops/README.md`](gitops/README.md#pat-permissions) for the full details.
+
 ## Helm chart
 
 The chart in `charts/kargo-showcase` deploys a Deployment with liveness and

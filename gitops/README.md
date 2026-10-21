@@ -60,6 +60,32 @@ If you apply the credentials later, run `kubectl apply -f
 gitops/apps/kargo-showcase/credentials.yaml` and retry any failed promotion
 from the Kargo UI. The real `credentials.yaml` is ignored by Git.
 
+### PAT permissions
+
+Kargo uses the token for both `git-clone` and `git-push`. The Warehouse can
+read this public repository anonymously, but a promotion must push a commit to
+`main`.
+
+For a **fine-grained PAT**:
+
+- Resource owner: the account that owns the repository.
+- Repository access: **Only select repositories** → `llorenzinho/kargo-showcase`.
+- Repository permissions:
+  - **Contents: Read and write** — required for clone and push.
+  - **Metadata: Read-only** — automatically included.
+- If the repository belongs to an organization with SAML/SSO enabled,
+  authorize the token for that organization.
+
+For a **classic PAT**:
+
+- `public_repo` is sufficient for this public repository.
+- `repo` also works, but is broader than necessary.
+
+The GitHub username goes in `username`; the PAT goes in `password`. Do not grant
+`Administration`, `Workflows`, or other unrelated scopes for this demo. If the
+token expires or is revoked, promotions fail at `git-push`; update the Secret
+and retry the Promotion.
+
 ## Promotion flow
 
 The image `kargo-showcase:dev` is already loaded into kind by `task cluster:up`,
