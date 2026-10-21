@@ -12,6 +12,8 @@ spec:
     - repoURL: https://github.com/llorenzinho/kargo-showcase.git
       targetRevision: main
       path: gitops/apps/kargo-showcase/kargo
+      directory:
+        recurse: true
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
