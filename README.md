@@ -110,7 +110,9 @@ prod requires a manual promotion in Kargo.
 Kargo needs write access to the repository to commit promotions. Copy
 `gitops/apps/kargo-showcase/credentials.example.yaml` to
 `gitops/apps/kargo-showcase/credentials.yaml`, fill in a GitHub username and
-PAT, and apply it after the Kargo Project exists or after `task gitops:apply`.
+PAT, and run `task gitops:apply` (the task applies the credentials file if it
+exists). If you add the file later, apply it manually; if the first promotion
+already failed, retry it from the Kargo UI.
 
 ## Helm chart
 

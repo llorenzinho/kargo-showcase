@@ -100,10 +100,10 @@ tasks:
       - kubectl apply -f utils/kargo-app.yaml
       - >-
         kubectl -n argocd wait --for=jsonpath='{.status.sync.status}'=Synced
-        application/kargo --timeout=600s
+        application/kargo --timeout=900s
       - >-
         kubectl -n argocd wait --for=jsonpath='{.status.health.status}'=Healthy
-        application/kargo --timeout=600s
+        application/kargo --timeout=900s
       - kubectl apply -f utils/kargo-ingress.yaml
       - |
         echo
@@ -115,6 +115,20 @@ tasks:
     desc: Bootstrap the GitOps ApplicationSet and Kargo resources
     cmds:
       - kubectl apply -f gitops/bootstrap/root-app.yaml
+      - |
+        for _ in $(seq 1 60); do
+          kubectl get namespace kargo-showcase >/dev/null 2>&1 && break
+          sleep 2
+        done
+        if [ -f gitops/apps/kargo-showcase/credentials.yaml ]; then
+          kubectl apply -f gitops/apps/kargo-showcase/credentials.yaml
+        else
+          echo
+          echo "Kargo Git credentials not found."
+          echo "Copy gitops/apps/kargo-showcase/credentials.example.yaml to"
+          echo "gitops/apps/kargo-showcase/credentials.yaml, fill it in, and apply it"
+          echo "before the first promotion can push to Git."
+        fi
 
   cluster:up:
     desc: Create the kind cluster, load the image, install Argo CD and Kargo

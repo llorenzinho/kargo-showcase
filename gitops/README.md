@@ -35,7 +35,8 @@ This creates the Argo CD app-of-apps, which applies:
 - the `kargo-showcase` AppProject and the ApplicationSet;
 - the Kargo Project, ProjectConfig, Warehouse, PromotionTask and Stages.
 
-The ApplicationSet's Git directory generator discovers
+`task gitops:apply` also applies `gitops/apps/kargo-showcase/credentials.yaml`
+if it exists. The ApplicationSet's Git directory generator discovers
 `gitops/apps/kargo-showcase/envs/*` and creates:
 
 - `kargo-showcase-dev` in `kargo-showcase-dev`;
@@ -45,16 +46,19 @@ The ApplicationSet's Git directory generator discovers
 ## Git credentials for Kargo
 
 Argo CD only needs read access; this repository is public. Kargo needs write
-access to commit the promoted release marker:
+access to commit the promoted release marker. Create the credentials file
+before running `task gitops:apply` so the task can apply it:
 
 ```sh
 cp gitops/apps/kargo-showcase/credentials.example.yaml \
    gitops/apps/kargo-showcase/credentials.yaml
 # edit username and PAT
-kubectl apply -f gitops/apps/kargo-showcase/credentials.yaml
+task gitops:apply
 ```
 
-The real `credentials.yaml` is ignored by Git.
+If you apply the credentials later, run `kubectl apply -f
+gitops/apps/kargo-showcase/credentials.yaml` and retry any failed promotion
+from the Kargo UI. The real `credentials.yaml` is ignored by Git.
 
 ## Promotion flow
 
@@ -78,7 +82,8 @@ lab fully local while still exercising real Kargo Freight and promotions.
 
 The shared PromotionTask copies the Freight's `release.yaml` into
 `envs/<stage>/release.yaml`, commits it to `main`, pushes, and asks Argo CD to
-sync the matching Application.
+sync the matching Application. Do not edit the `envs/*/release.yaml` files by
+hand: Kargo owns them.
 
 ### Simulate a release
 
