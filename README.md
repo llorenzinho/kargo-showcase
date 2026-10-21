@@ -25,10 +25,11 @@ curl localhost:8080/readyz
 curl localhost:8080/api/random
 ```
 
-The `Taskfile.yml` also provides `task build`, `task test`, `task vet` and
-`task docker:build`. If mise is not activated in your shell, prefix commands
-with `mise exec --`, e.g. `mise exec -- task run`. The equivalent mise tasks
-(`mise run build`, `mise run test`, ...) are available too.
+The `Taskfile.yml` also provides `task build`, `task test`, `task vet`,
+`task docker:build` and `task image:build VERSION=...`. If mise is not activated
+in your shell, prefix commands with `mise exec --`, e.g. `mise exec -- task run`.
+The equivalent mise tasks (`mise run build`, `mise run test`, ...) are available
+too.
 
 ## Container image
 
@@ -39,6 +40,18 @@ docker run --rm -p 8080:8080 kargo-showcase:dev
 
 The Dockerfile builds a static binary and ships it on a distroless, non-root
 image.
+
+To simulate CI publishing a new image version into the local kind cluster:
+
+```sh
+task image:build VERSION=v2
+```
+
+This builds `kargo-showcase:v2` and loads it into the kind cluster with
+`kind load docker-image`; no external registry is needed. The chart uses
+`imagePullPolicy: IfNotPresent`, so the loaded tag is used directly by the
+pods. The tag can then be promoted through Git by Kargo — see
+[`gitops/README.md`](gitops/README.md#simulate-a-release).
 
 ## Kubernetes with kind
 

@@ -99,8 +99,9 @@ podLabels:
   kargo.akuity.io/release: v1
 ```
 
-The promoted value is the `kargo.akuity.io/release` pod label. This keeps the
-lab fully local while still exercising real Kargo Freight and promotions.
+The promoted value is the whole release marker: `image.tag` and the
+`kargo.akuity.io/release` pod label. This keeps the lab fully local while still
+exercising real Kargo Freight and promotions.
 
 1. `dev` subscribes directly to the Warehouse and is auto-promoted.
 2. `staging` subscribes to `dev` and is auto-promoted once `dev` is healthy.
@@ -113,17 +114,40 @@ hand: Kargo owns them.
 
 ### Simulate a release
 
-Edit the release marker and push:
+For an **image release**, first build and load the new image into kind:
 
 ```sh
-# change v1 to v2 in gitops/apps/kargo-showcase/release.yaml
+task image:build VERSION=v2
+```
+
+This simulates a CI pipeline publishing `kargo-showcase:v2`; locally,
+`kind load docker-image` replaces the registry push.
+
+Then update the source release marker:
+
+```yaml
+# gitops/apps/kargo-showcase/release.yaml
+image:
+  tag: v2
+podLabels:
+  kargo.akuity.io/release: v2
+```
+
+Commit and push:
+
+```sh
 git add gitops/apps/kargo-showcase/release.yaml
 git commit -m "release v2"
 git push
 ```
 
-The Warehouse creates new Freight. Dev and staging follow automatically; prod
-waits for a manual promotion from the Kargo UI.
+The Warehouse creates new Freight. Kargo copies the whole release marker into
+each environment overlay, so the `image.tag` and the release label are promoted
+together. Dev and staging follow automatically; prod waits for a manual
+promotion from the Kargo UI.
+
+For a **config-only release**, leave `image.tag: dev` and bump only
+`podLabels["kargo.akuity.io/release"]`.
 
 ## Environment URLs
 
@@ -137,7 +161,12 @@ Kargo is exposed at <http://kargo.localhost> (`admin` / `admin`, local only).
 
 ## Moving to image promotions
 
-When an image registry is available, add an image subscription to the
-Warehouse and change the PromotionTask to update `image.tag` in the target
-environment (for example with `yaml-update`). The ApplicationSet and Stage
-structure do not change.
+This lab already simulates image promotion through Git: build/load a version
+with `task image:build VERSION=v2`, set `image.tag: v2` in the source release
+marker, and push. Kargo promotes the marker through dev, staging and prod, so
+each environment eventually references `kargo-showcase:v2`.
+
+For a production setup, replace the Git Warehouse with an image subscription
+and change the PromotionTask to update `image.tag` in the target environment
+(for example with `yaml-update`). The ApplicationSet and Stage structure do not
+change.

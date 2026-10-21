@@ -48,6 +48,25 @@ tasks:
     cmds:
       - docker build -t {{.IMAGE}}:{{.TAG}} app
 
+  image:build:
+    desc: Build a versioned image and load it into kind (VERSION=v2)
+    requires:
+      vars: [VERSION]
+    preconditions:
+      - sh: kind get clusters | grep -qx '{{.CLUSTER}}'
+        msg: "kind cluster {{.CLUSTER}} not found; run: task cluster:up"
+    vars:
+      IMAGE_REF: '{{.IMAGE}}:{{.VERSION}}'
+    cmds:
+      - docker build --tag '{{.IMAGE_REF}}' app
+      - kind load docker-image '{{.IMAGE_REF}}' --name '{{.CLUSTER}}'
+      - |
+        echo
+        echo "Image {{.IMAGE_REF}} loaded into kind cluster {{.CLUSTER}}."
+        echo "To simulate a Kargo image promotion, set image.tag: {{.VERSION}}"
+        echo "and bump podLabels[\"kargo.akuity.io/release\"] in"
+        echo "gitops/apps/kargo-showcase/release.yaml, then commit and push."
+
   ingress:install:
     desc: Install ingress-nginx on the kind host ports
     cmds:
