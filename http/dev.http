@@ -1,0 +1,13 @@
+@host = http://localhost:8080
+
+### Liveness probe
+GET {{host}}/healthz
+
+### Readiness probe
+GET {{host}}/readyz
+
+### Numero random
+GET {{host}}/api/random
+
+### Metodo non ammesso (atteso: 405)
+POST {{host}}/api/random

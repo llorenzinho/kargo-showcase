@@ -1,0 +1,29 @@
+# Build output
+bin/
+app/bin/
+dist/
+*.exe
+*.test
+
+# Go test/coverage output
+coverage.out
+*.out
+
+# Helm packaged charts and downloaded dependencies
+charts/**/*.tgz
+charts/**/charts/
+
+# Logs
+*.log
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Editors and OS files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~

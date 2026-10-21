@@ -1,0 +1,101 @@
+version: "3"
+
+vars:
+  IMAGE: kargo-showcase
+  TAG: dev
+  PORT: "8080"
+  CLUSTER: kargo-showcase
+  ARGOCD_CHART_VERSION: 10.10.5
+  ARGOCD_HOST: argocd.localhost
+  INGRESS_NGINX_VERSION: controller-v1.15.1
+
+tasks:
+  default:
+    desc: Show available tasks
+    silent: true
+    cmds:
+      - task --list
+
+  run:
+    desc: Run the server locally on :{{.PORT}}
+    dir: app
+    env:
+      PORT: "{{.PORT}}"
+    cmds:
+      - go run .
+
+  build:
+    desc: Build the server binary
+    dir: app
+    cmds:
+      - go build -trimpath -o bin/server .
+
+  test:
+    desc: Run tests
+    dir: app
+    cmds:
+      - go test ./...
+
+  vet:
+    desc: Run go vet
+    dir: app
+    cmds:
+      - go vet ./...
+
+  docker:build:
+    desc: Build the container image {{.IMAGE}}:{{.TAG}}
+    cmds:
+      - docker build -t {{.IMAGE}}:{{.TAG}} app
+
+  ingress:install:
+    desc: Install ingress-nginx on the kind host ports
+    cmds:
+      - >-
+        kubectl apply -f
+        https://raw.githubusercontent.com/kubernetes/ingress-nginx/{{.INGRESS_NGINX_VERSION}}/deploy/static/provider/kind/deploy.yaml
+      - >-
+        kubectl -n ingress-nginx wait --for=condition=available
+        deployment/ingress-nginx-controller --timeout=180s
+
+  argocd:install:
+    desc: Install Argo CD and expose it through the ingress
+    cmds:
+      - helm repo add argo https://argoproj.github.io/argo-helm --force-update
+      - helm repo update argo
+      - >-
+        helm upgrade --install argocd argo/argo-cd
+        --namespace argocd --create-namespace
+        --version {{.ARGOCD_CHART_VERSION}}
+        --set 'configs.params.server\.insecure=true'
+        --wait --timeout 10m
+      - kubectl apply -f utils/argocd-ingress.yaml
+      - |
+        for _ in $(seq 1 30); do
+          kubectl -n argocd get secret argocd-initial-admin-secret >/dev/null 2>&1 && break
+          sleep 2
+        done
+        echo
+        echo "Argo CD URL:      http://{{.ARGOCD_HOST}}"
+        echo "Argo CD username: admin"
+        if kubectl -n argocd get secret argocd-initial-admin-secret >/dev/null 2>&1; then
+          printf "Argo CD password: "
+          kubectl -n argocd get secret argocd-initial-admin-secret \
+            -o jsonpath='{.data.password}' | base64 -d
+          echo
+        else
+          echo "Argo CD password: initial secret not found (password may have been changed)"
+        fi
+
+  cluster:up:
+    desc: Create the kind cluster, build/load the image and install Argo CD
+    cmds:
+      - kind create cluster --config cluster.yaml
+      - task: ingress:install
+      - task: docker:build
+      - kind load docker-image {{.IMAGE}}:{{.TAG}} --name {{.CLUSTER}}
+      - task: argocd:install
+
+  cluster:down:
+    desc: Delete the kind cluster {{.CLUSTER}}
+    cmds:
+      - kind delete cluster --name {{.CLUSTER}}

@@ -1,0 +1,28 @@
+[tools]
+go = "1.27"
+task = "3"
+kind = "0.33"
+
+[tasks.build]
+description = "Build the server binary"
+dir = "app"
+run = "go build -trimpath -o bin/server ."
+
+[tasks.run]
+description = "Run the server locally"
+dir = "app"
+run = "go run ."
+
+[tasks.test]
+description = "Run tests"
+dir = "app"
+run = "go test ./..."
+
+[tasks.vet]
+description = "Run go vet"
+dir = "app"
+run = "go vet ./..."
+
+[tasks.docker-build]
+description = "Build the container image"
+run = "docker build -t kargo-showcase:dev app"

@@ -1,0 +1,16 @@
+1. Check the release status:
+
+   helm status {{ .Release.Name }} -n {{ .Release.Namespace }}
+
+2. Test the API through the ingress:
+
+   curl http://{{ (index .Values.ingress.hosts 0).host }}/api/random
+
+   The chart expects an ingress controller with class "{{ .Values.ingress.className }}"
+   to be running in the cluster.
+{{- if not .Values.ingress.enabled }}
+
+   Ingress is disabled; use kubectl port-forward instead:
+
+   kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "kargo-showcase.fullname" . }} 8080:{{ .Values.service.port }}
+{{- end }}
