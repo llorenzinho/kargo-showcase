@@ -4,7 +4,7 @@
 # there is no image registry to poll. Bump the release label to create new
 # Freight, then let Kargo promote it through dev, staging and prod.
 image:
-  tag: dev
+  tag: v2
 
 podLabels:
   kargo.akuity.io/release: v1
