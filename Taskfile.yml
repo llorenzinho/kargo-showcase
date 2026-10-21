@@ -7,6 +7,7 @@ vars:
   CLUSTER: kargo-showcase
   ARGOCD_CHART_VERSION: 10.10.5
   ARGOCD_HOST: argocd.localhost
+  KARGO_HOST: kargo.localhost
   INGRESS_NGINX_VERSION: controller-v1.15.1
 
 tasks:
@@ -86,14 +87,44 @@ tasks:
           echo "Argo CD password: initial secret not found (password may have been changed)"
         fi
 
+  kargo:install:
+    desc: Install cert-manager and Kargo through Argo CD and expose Kargo
+    cmds:
+      - kubectl apply -f utils/cert-manager-app.yaml
+      - >-
+        kubectl -n argocd wait --for=jsonpath='{.status.sync.status}'=Synced
+        application/cert-manager --timeout=600s
+      - >-
+        kubectl -n argocd wait --for=jsonpath='{.status.health.status}'=Healthy
+        application/cert-manager --timeout=600s
+      - kubectl apply -f utils/kargo-app.yaml
+      - >-
+        kubectl -n argocd wait --for=jsonpath='{.status.sync.status}'=Synced
+        application/kargo --timeout=600s
+      - >-
+        kubectl -n argocd wait --for=jsonpath='{.status.health.status}'=Healthy
+        application/kargo --timeout=600s
+      - kubectl apply -f utils/kargo-ingress.yaml
+      - |
+        echo
+        echo "Kargo URL:      http://{{.KARGO_HOST}}"
+        echo "Kargo username: admin"
+        echo "Kargo password: admin"
+
+  gitops:apply:
+    desc: Bootstrap the GitOps ApplicationSet and Kargo resources
+    cmds:
+      - kubectl apply -f gitops/bootstrap/root-app.yaml
+
   cluster:up:
-    desc: Create the kind cluster, build/load the image and install Argo CD
+    desc: Create the kind cluster, load the image, install Argo CD and Kargo
     cmds:
       - kind create cluster --config cluster.yaml
       - task: ingress:install
       - task: docker:build
       - kind load docker-image {{.IMAGE}}:{{.TAG}} --name {{.CLUSTER}}
       - task: argocd:install
+      - task: kargo:install
 
   cluster:down:
     desc: Delete the kind cluster {{.CLUSTER}}

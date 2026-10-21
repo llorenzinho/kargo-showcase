@@ -1,0 +1,19 @@
+replicaCount: 3
+
+ingress:
+  hosts:
+    - host: prod.kargo-showcase.localhost
+      paths:
+        - path: /
+          pathType: Prefix
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 64Mi
+  limits:
+    cpu: 500m
+    memory: 128Mi
+
+podLabels:
+  environment: prod

@@ -1,0 +1,5 @@
+image:
+  tag: dev
+
+podLabels:
+  kargo.akuity.io/release: v0

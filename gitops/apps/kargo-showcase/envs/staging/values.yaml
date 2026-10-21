@@ -1,0 +1,11 @@
+replicaCount: 2
+
+ingress:
+  hosts:
+    - host: staging.kargo-showcase.localhost
+      paths:
+        - path: /
+          pathType: Prefix
+
+podLabels:
+  environment: staging

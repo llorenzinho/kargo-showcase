@@ -1,0 +1,21 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: prod
+  namespace: kargo-showcase
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+    kargo.akuity.io/color: red
+spec:
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: kargo-showcase
+      sources:
+        stages:
+          - staging
+  promotionTemplate:
+    spec:
+      steps:
+        - task:
+            name: promote-kargo-showcase

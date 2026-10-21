@@ -1,0 +1,39 @@
+# Kargo is installed by Argo CD itself: this Application syncs the official
+# Kargo Helm chart. The admin password is the local demo password "admin";
+# the bcrypt hash below is intentionally public and must not be used outside
+# a throwaway local cluster.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kargo
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: kargo
+spec:
+  project: default
+  source:
+    repoURL: ghcr.io/akuity/kargo-charts
+    chart: kargo
+    targetRevision: 1.12.4
+    helm:
+      releaseName: kargo
+      values: |
+        api:
+          host: kargo.localhost
+          tls:
+            enabled: false
+          ingress:
+            enabled: false
+          adminAccount:
+            passwordHash: "$2a$10$Zrhhie4vLz5ygtVSaif6o.qN36jgs6vjtMBdM6yrU1FOeiAAMMxOm"
+            tokenSigningKey: "kargo-showcase-local-token-signing-key"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kargo
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

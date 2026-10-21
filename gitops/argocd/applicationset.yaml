@@ -1,0 +1,52 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: kargo-showcase
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - git:
+        repoURL: https://github.com/llorenzinho/kargo-showcase.git
+        revision: main
+        directories:
+          - path: gitops/apps/kargo-showcase/envs/*
+  template:
+    metadata:
+      name: 'kargo-showcase-{{ .path.basename }}'
+      labels:
+        app.kubernetes.io/name: kargo-showcase
+        app.kubernetes.io/part-of: kargo-showcase
+        environment: '{{ .path.basename }}'
+      annotations:
+        kargo.akuity.io/authorized-stage: 'kargo-showcase:{{ .path.basename }}'
+    spec:
+      project: kargo-showcase
+      source:
+        repoURL: https://github.com/llorenzinho/kargo-showcase.git
+        targetRevision: main
+        path: charts/kargo-showcase
+        helm:
+          valueFiles:
+            - /gitops/apps/kargo-showcase/base/values.yaml
+            - /gitops/apps/kargo-showcase/envs/{{ .path.basename }}/values.yaml
+            - /gitops/apps/kargo-showcase/envs/{{ .path.basename }}/release.yaml
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: 'kargo-showcase-{{ .path.basename }}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m

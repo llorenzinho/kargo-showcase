@@ -43,14 +43,14 @@ image.
 ## Kubernetes with kind
 
 ```sh
-task cluster:up     # cluster + ingress-nginx + image + Argo CD
+task cluster:up     # cluster + ingress-nginx + image + Argo CD + Kargo
 task cluster:down   # delete the cluster
 ```
 
 `kind` is installed by mise, and the cluster is defined in `cluster.yaml`
 (one control-plane node with ports 80/443 published to the host).
-`task cluster:up` also installs ingress-nginx, exposes Argo CD through it and
-prints its access credentials.
+`task cluster:up` also installs ingress-nginx, Argo CD and Kargo, exposes them
+through Ingress resources and prints their access credentials.
 
 ### Argo CD
 
@@ -67,6 +67,50 @@ kubectl -n argocd get secret argocd-initial-admin-secret \
 
 The Argo CD chart version is pinned by `ARGOCD_CHART_VERSION` in the
 `Taskfile.yml`; reinstall it standalone with `task argocd:install`.
+
+### Kargo
+
+Kargo is installed **by Argo CD**: `utils/cert-manager-app.yaml` and
+`utils/kargo-app.yaml` are Argo CD Applications that sync the cert-manager and
+Kargo Helm charts. `task kargo:install` applies them, waits for Argo CD to
+report them healthy, applies the Kargo Ingress and prints the credentials.
+
+- URL: <http://kargo.localhost>
+- Username: `admin`
+- Password: `admin` (local demo only)
+
+The Kargo admin password hash and token signing key in `utils/kargo-app.yaml`
+are intentionally local-only values.
+
+## GitOps and promotions
+
+The `gitops/` directory contains the ApplicationSet, the per-environment Helm
+value overlays and the Kargo pipeline. See [`gitops/README.md`](gitops/README.md)
+for the full flow.
+
+```sh
+task gitops:apply
+```
+
+This bootstraps the Argo CD ApplicationSet and the Kargo Project, Warehouse,
+PromotionTask and Stages. The ApplicationSet creates one Argo CD Application
+per environment under `gitops/apps/kargo-showcase/envs/`:
+
+| Environment | URL |
+| --- | --- |
+| dev | <http://dev.kargo-showcase.localhost/api/random> |
+| staging | <http://staging.kargo-showcase.localhost/api/random> |
+| prod | <http://prod.kargo-showcase.localhost/api/random> |
+
+The image `kargo-showcase:dev` is already loaded into kind, so this lab does not
+push to an external registry. Kargo promotes a Git release marker
+(`gitops/apps/kargo-showcase/release.yaml`): dev and staging are auto-promoted,
+prod requires a manual promotion in Kargo.
+
+Kargo needs write access to the repository to commit promotions. Copy
+`gitops/apps/kargo-showcase/kargo/credentials.example.yaml` to
+`credentials.yaml`, fill in a GitHub username and PAT, and apply it after the
+Kargo Project exists or after `task gitops:apply`.
 
 ## Helm chart
 

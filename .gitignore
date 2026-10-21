@@ -20,6 +20,8 @@ charts/**/charts/
 .env
 .env.*
 !.env.example
+gitops/apps/kargo-showcase/kargo/credentials.yaml
+gitops/apps/kargo-showcase/credentials.yaml
 
 # Editors and OS files
 .DS_Store

@@ -1,0 +1,11 @@
+replicaCount: 1
+
+ingress:
+  hosts:
+    - host: dev.kargo-showcase.localhost
+      paths:
+        - path: /
+          pathType: Prefix
+
+podLabels:
+  environment: dev

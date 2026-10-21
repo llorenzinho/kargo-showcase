@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: kargo-showcase
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  description: kargo-showcase dev, staging and prod promotion pipeline
+  sourceRepos:
+    - https://github.com/llorenzinho/kargo-showcase.git
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: 'kargo-showcase-*'
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'

@@ -1,0 +1,20 @@
+# The image kargo-showcase:dev is already loaded into kind, so this lab uses
+# a Git Warehouse: a change to release.yaml creates new Freight without
+# requiring an external image registry. In a real setup, replace this with an
+# image subscription and update image.tag in the promotion task.
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Warehouse
+metadata:
+  name: kargo-showcase
+  namespace: kargo-showcase
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  subscriptions:
+    - git:
+        repoURL: https://github.com/llorenzinho/kargo-showcase.git
+        branch: main
+        commitSelectionStrategy: NewestFromBranch
+        discoveryLimit: 20
+        includePaths:
+          - gitops/apps/kargo-showcase/release.yaml

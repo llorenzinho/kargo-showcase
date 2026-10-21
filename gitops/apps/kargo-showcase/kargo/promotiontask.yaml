@@ -1,0 +1,48 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: PromotionTask
+metadata:
+  name: promote-kargo-showcase
+  namespace: kargo-showcase
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  vars:
+    - name: repoURL
+      value: https://github.com/llorenzinho/kargo-showcase.git
+    - name: branch
+      value: main
+  steps:
+    # Check out the Freight commit (the release marker being promoted) and
+    # the current main branch where the environment overlays live.
+    - uses: git-clone
+      config:
+        repoURL: ${{ vars.repoURL }}
+        checkout:
+          - commit: ${{ commitFrom(vars.repoURL).ID }}
+            path: ./src
+          - branch: ${{ vars.branch }}
+            path: ./out
+
+    # Copy the promoted release marker into this Stage's overlay.
+    - uses: copy
+      config:
+        inPath: ./src/gitops/apps/kargo-showcase/release.yaml
+        outPath: ./out/gitops/apps/kargo-showcase/envs/${{ ctx.stage }}/release.yaml
+
+    - uses: git-commit
+      as: commit
+      config:
+        path: ./out
+        message: "chore(${{ ctx.stage }}): promote kargo-showcase"
+
+    - uses: git-push
+      config:
+        path: ./out
+
+    - uses: argocd-update
+      config:
+        apps:
+          - name: kargo-showcase-${{ ctx.stage }}
+            sources:
+              - repoURL: ${{ vars.repoURL }}
+                desiredRevision: ${{ task.outputs.commit.commit }}
