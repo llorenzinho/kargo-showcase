@@ -92,15 +92,9 @@ tasks:
     cmds:
       - kubectl apply -f utils/cert-manager-app.yaml
       - >-
-        kubectl -n argocd wait --for=jsonpath='{.status.sync.status}'=Synced
-        application/cert-manager --timeout=600s
-      - >-
         kubectl -n argocd wait --for=jsonpath='{.status.health.status}'=Healthy
         application/cert-manager --timeout=600s
       - kubectl apply -f utils/kargo-app.yaml
-      - >-
-        kubectl -n argocd wait --for=jsonpath='{.status.sync.status}'=Synced
-        application/kargo --timeout=900s
       - >-
         kubectl -n argocd wait --for=jsonpath='{.status.health.status}'=Healthy
         application/kargo --timeout=900s

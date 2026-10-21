@@ -15,7 +15,7 @@ gitops/
 │   ├── release.yaml             # Git Freight source (release marker)
 │   ├── envs/<env>/values.yaml   # environment configuration
 │   ├── envs/<env>/release.yaml  # promoted release marker (written by Kargo)
-│   └── kargo/                   # Project, Warehouse, PromotionTask, Stages
+│   └── kargo/                   # Namespace, Project, Warehouse, PromotionTask, Stages
 └── bootstrap/root-app.yaml      # optional app-of-apps bootstrap
 ```
 

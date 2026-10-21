@@ -1,0 +1,11 @@
+# Pre-create the Kargo project namespace so the ProjectConfig and other
+# namespaced Kargo resources can be applied deterministically. The label tells
+# Kargo to adopt the namespace as the "kargo-showcase" Project's namespace.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kargo-showcase
+  labels:
+    kargo.akuity.io/project: "true"
+  annotations:
+    argocd.argoproj.io/sync-wave: "-3"
